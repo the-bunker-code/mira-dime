@@ -13,7 +13,7 @@ Cada modo tiene tres niveles y sesiones de 3, 5 u 8 rondas. Trae **184 objetos d
 
 **Objetos de casa (oculto por ahora).** El panel para sumar objetos con una foto y una IA sigue en el código y en las pruebas, pero el botón del inicio tiene `hidden`. Para volver a mostrarlo, quita `hidden` del botón `data-action="open-objects"` en `index.html` y la línea que lo comprueba en `tests/e2e/smoke.spec.js`.
 
-Es de la misma serie que _Memo Colores_ y _Dados y Tapitas_: se armó copiando `code/memo-colores/` según `docs/knowledge/NEW-GAME-PROMPT.md`. Es **HTML, CSS y JavaScript sin framework ni compilación**, más una sola función de servidor (`functions/api/describe.js`) para la IA de las fotos.
+Es de la misma serie que _Memo Colores_ y _Dados y Tapitas_: se armó copiando `code/memo-colores/` según `docs/knowledge/NEW-GAME-PROMPT.md`. Es **HTML, CSS y JavaScript sin framework ni compilación**, más un Worker pequeño (`worker/index.js`) que solo atiende `/api/describe`, para la IA de las fotos.
 
 - Qué datos guarda y qué sale del dispositivo: [PRIVACY.md](PRIVACY.md)
 - Seguridad: [SECURITY.md](SECURITY.md) · Decisiones: [ARCHITECTURE.md](ARCHITECTURE.md) · Cambios: [CHANGELOG.md](CHANGELOG.md)
@@ -68,8 +68,9 @@ js/
   config.js             modos, niveles, objetos de fábrica, textos y tiempos
   audio.js, storage.js, dom.js, icons.js, mascot.js   copiados de la serie
 server/describe.js      lógica de la IA (reintentos, validación), sin Cloudflare
-functions/api/describe.js   Cloudflare Pages Function: POST /api/describe
-wrangler.jsonc          configuración de Cloudflare Pages (sin secretos)
+worker/index.js         Cloudflare Worker: POST /api/describe; lo demás son archivos estáticos
+wrangler.jsonc          configuración de Cloudflare Workers (sin secretos)
+.assetsignore           lo que NO se publica (código de servidor, pruebas, node_modules, .dev.vars…)
 img/objects/            184 dibujos de Fluent Emoji (SVG) + LICENSE
 icons/                  ícono de la app, og-image.png (1200×630) y capturas del manifiesto
 manifest.webmanifest    instalar como app
@@ -78,7 +79,7 @@ robots.txt, sitemap.xml para buscadores
 
 Flujo: `data-action → main.js → game.js → state → notify() → render.js`. Solo `game.js` cambia el estado.
 
-## IA de las fotos (Cloudflare Pages + OpenRouter)
+## IA de las fotos (Cloudflare Workers + OpenRouter)
 
 1. El adulto toca **Tomar foto**. El navegador la achica a 768 px y la vuelve a codificar en JPEG con un `<canvas>`, lo que borra GPS y metadatos.
 2. La página manda la foto a **nuestro** `/api/describe`. El navegador nunca habla con OpenRouter y nunca ve la clave.
@@ -94,24 +95,27 @@ Flujo: `data-action → main.js → game.js → state → notify() → render.js
 ### Configurar la clave (una vez)
 
 ```bash
-npx wrangler pages secret put OPENROUTER_API_KEY --project-name mira-y-dime
+npx wrangler secret put OPENROUTER_API_KEY
 ```
 
-La clave queda guardada en Cloudflare y no aparece en el repositorio ni en el navegador. Para probar la IA en local, escribe `OPENROUTER_API_KEY=...` en `.dev.vars`, que está en `.gitignore`, y corre `npx wrangler pages dev .`.
+La clave queda guardada en Cloudflare y no aparece en el repositorio ni en el navegador. Para probar la IA en local, escribe `OPENROUTER_API_KEY=...` en `.dev.vars`, que está en `.gitignore`, y corre `npx wrangler dev`.
 
-> **Cuidado:** publica desde Git (Cloudflare Pages conectado al repositorio), donde `.dev.vars` no existe. Si publicas con `wrangler pages deploy .` desde tu carpeta, primero borra `.dev.vars`.
+> `.dev.vars` está en `.assetsignore`, así que nunca se publica como archivo, ni desde Git ni con `npx wrangler deploy` desde tu carpeta.
 
 ## Despliegue
 
-**Cloudflare Pages** es el recomendado, porque es el único que corre `functions/`:
+**Cloudflare Workers** (Workers & Pages → importar el repositorio):
 
-- comando de build: ninguno
-- carpeta de salida: `/`
-- secret: `OPENROUTER_API_KEY`
+- comando de build: ninguno (vacío)
+- comando de deploy: `npx wrangler deploy`
+- directorio raíz: la carpeta de este juego (donde está `wrangler.jsonc`)
+- secret: `OPENROUTER_API_KEY` (Settings → Variables and Secrets, o el comando de arriba)
+
+`wrangler.jsonc` publica esta misma carpeta como archivos estáticos. `.assetsignore` deja fuera todo lo que no es el juego, y `_headers` aplica la CSP y las demás cabeceras. Para probarlo antes sin subir nada: `npx wrangler deploy --dry-run`.
 
 En Netlify o GitHub Pages el juego funciona igual, pero sin IA: el panel pide escribir la palabra. GitHub Pages además pierde las cabeceras de `_headers` (ver SECURITY.md).
 
-**Dominio.** Las etiquetas Open Graph necesitan URLs absolutas. Están escritas para `https://mira-y-dime.pages.dev/`, el dominio que da Cloudflare al proyecto `mira-y-dime`. Si publicas en otro dominio, cámbialo en `index.html` (canonical, `og:url`, `og:image`), `robots.txt` y `sitemap.xml`. `tests/seo.test.js` falla si no coinciden. Para probar la vista previa ya publicada: [opengraph.xyz](https://www.opengraph.xyz) o el depurador de Facebook.
+**Dominio.** Las etiquetas Open Graph necesitan URLs absolutas. Están escritas para `https://mira-y-dime.pages.dev/`, que **no** es el dominio de un Worker: Cloudflare publica en `https://mira-y-dime.<tu-subdominio>.workers.dev/`. Si publicas en otro dominio, cámbialo en `index.html` (canonical, `og:url`, `og:image`), `robots.txt` y `sitemap.xml`. `tests/seo.test.js` falla si no coinciden. Para probar la vista previa ya publicada: [opengraph.xyz](https://www.opengraph.xyz) o el depurador de Facebook.
 
 **Instalar en el celular.** Android/Chrome: en _Ajustes para adultos_ aparece **Instalar** cuando el navegador lo permite, es decir, en HTTPS y después de una visita con el service worker activo. iPhone/iPad: la misma sección explica _Compartir → Agregar a inicio_. Instalado, abre a pantalla completa y funciona sin internet.
 

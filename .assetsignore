@@ -1,0 +1,40 @@
+# Lo que wrangler NO sube como archivo público (formato .gitignore).
+# Se publica solo el juego: index.html, css/, js/, fonts/, icons/, img/, sw.js,
+# manifest.webmanifest, robots.txt, sitemap.xml y _headers.
+
+# Secretos y estado local (nunca deben salir)
+.dev.vars
+.env
+.env.*
+.wrangler/
+
+# Código de servidor y configuración
+worker/
+server/
+wrangler.jsonc
+.assetsignore
+
+# Desarrollo y pruebas
+node_modules/
+tests/
+test-results/
+playwright-report/
+coverage/
+.lighthouseci/
+scripts/
+package.json
+package-lock.json
+eslint.config.js
+jsconfig.json
+playwright.config.js
+lighthouserc.json
+.prettierrc.json
+.prettierignore
+.htmlvalidate.json
+.github/
+.git/
+.gitignore
+.nojekyll
+
+# Documentación del repositorio
+*.md

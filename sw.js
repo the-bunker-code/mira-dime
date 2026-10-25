@@ -10,7 +10,6 @@ const CACHE_NAME = `mira-y-dime-${VERSION}`;
 /** Precarga para el primer uso offline. */
 const FILES = [
   './',
-  'index.html',
   'manifest.webmanifest',
   'css/styles.css',
   'fonts/fredoka-latin-v17.woff2',
@@ -233,7 +232,9 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Solo GET del mismo origen. Fallback: request cacheado → index.html.
+// Solo GET del mismo origen. Fallback: request cacheado → la página (./).
+// No se precarga 'index.html': Cloudflare lo redirige a / y una respuesta
+// redirigida no sirve para navegar sin internet.
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
@@ -247,6 +248,6 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       })
-      .catch(async () => (await caches.match(request)) ?? (await caches.match('index.html')) ?? Response.error()),
+      .catch(async () => (await caches.match(request)) ?? (await caches.match('./')) ?? Response.error()),
   );
 });
