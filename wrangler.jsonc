@@ -1,0 +1,7 @@
+// Cloudflare Pages: sitio estático (esta carpeta) + functions/api/describe.js.
+// La clave NO va aquí: `npx wrangler pages secret put OPENROUTER_API_KEY`.
+{
+  "name": "mira-y-dime",
+  "compatibility_date": "2026-10-01",
+  "pages_build_output_dir": ".",
+}

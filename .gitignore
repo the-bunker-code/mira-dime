@@ -1,0 +1,22 @@
+# Dependencias de desarrollo (no se publican)
+node_modules/
+
+# Resultados de pruebas y cobertura
+playwright-report/
+test-results/
+coverage/
+.lighthouseci/
+
+# Variables de entorno y secretos. La clave de OpenRouter va en .dev.vars (local)
+# o como secret de Cloudflare (publicado). Nunca en el repositorio.
+.env
+.env.*
+.dev.vars
+.wrangler/
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log

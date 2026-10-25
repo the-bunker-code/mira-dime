@@ -1,0 +1,53 @@
+{
+  "id": "./",
+  "name": "Mira y Dime",
+  "short_name": "Mira y Dime",
+  "description": "Juego para armar palabras y frases con lo que mira: letras, sílabas y frases, para niñas y niños de 3 a 7 años.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#fff8ea",
+  "theme_color": "#ffe7b8",
+  "categories": ["education", "games", "kids"],
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icons/screenshot-narrow.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Una ronda de Letras en el celular"
+    },
+    {
+      "src": "icons/screenshot-wide.png",
+      "sizes": "1366x900",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Una ronda de Sílabas en la computadora"
+    }
+  ]
+}

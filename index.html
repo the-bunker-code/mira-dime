@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta
+      name="description"
+      content="Juego gratis para armar palabras y frases con lo que mira: letras, sílabas y frases, con voz y sin anuncios. Para niñas y niños de 3 a 7 años, también con autismo o TDAH."
+    />
+    <!--
+      SEO y vista previa al compartir (WhatsApp, Facebook, X…). Open Graph pide
+      URLs absolutas: si el sitio se publica en otro dominio, cambia
+      https://mira-y-dime.pages.dev/ aquí, en robots.txt y en sitemap.xml
+      (tests/seo.test.js revisa que coincidan).
+    -->
+    <link rel="canonical" href="https://mira-y-dime.pages.dev/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Mira y Dime" />
+    <meta property="og:locale" content="es_LA" />
+    <meta property="og:url" content="https://mira-y-dime.pages.dev/" />
+    <meta property="og:title" content="Mira y Dime — arma palabras con lo que miras" />
+    <meta
+      property="og:description"
+      content="Juego gratis para armar palabras y frases con lo que mira: letras, sílabas y frases, con voz y sin anuncios. Para niñas y niños de 3 a 7 años, también con autismo o TDAH."
+    />
+    <meta property="og:image" content="https://mira-y-dime.pages.dev/icons/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Mira y Dime: dos piezas de madera, GA y TO, junto al dibujo de un gato." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <!-- Instalar como app: Android usa manifest.webmanifest; iPhone lee estas etiquetas. -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Mira y Dime" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <!--
+      Política de seguridad (CSP): solo se cargan archivos de este mismo sitio y
+      ningún script o estilo escrito dentro del HTML. Va aquí además de en _headers
+      para que también funcione en GitHub Pages, que no permite cabeceras propias.
+      img-src permite data: y blob: para mostrar la foto del adulto (la arma
+      nuestro propio canvas); connect-src 'self': el navegador solo habla con /api.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#ffe7b8" />
+    <title>Mira y Dime — juego para armar palabras y frases</title>
+
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/icon-180.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+
+    <!-- Letra redondeada, servida desde este sitio: no se envía nada a terceros. -->
+    <link rel="preload" href="fonts/fredoka-latin-v17.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="css/styles.css" />
+
+    <!--
+      modulepreload: el navegador descarga todos los módulos a la vez, en vez de
+      descubrirlos de a uno (main → game → rules → config). Si agregas un módulo
+      a js/, agrégalo también aquí y en sw.js.
+    -->
+    <link rel="modulepreload" href="js/main.js" />
+    <link rel="modulepreload" href="js/game.js" />
+    <link rel="modulepreload" href="js/render.js" />
+    <link rel="modulepreload" href="js/rules.js" />
+    <link rel="modulepreload" href="js/config.js" />
+    <link rel="modulepreload" href="js/spanish.js" />
+    <link rel="modulepreload" href="js/audio.js" />
+    <link rel="modulepreload" href="js/storage.js" />
+    <link rel="modulepreload" href="js/objects.js" />
+    <link rel="modulepreload" href="js/photo.js" />
+    <link rel="modulepreload" href="js/icons.js" />
+    <link rel="modulepreload" href="js/mascot.js" />
+    <link rel="modulepreload" href="js/dom.js" />
+    <link rel="modulepreload" href="js/settings-panel.js" />
+    <link rel="modulepreload" href="js/objects-panel.js" />
+    <link rel="modulepreload" href="js/install.js" />
+  </head>
+  <body>
+    <noscript><p class="boot-warning">Este juego necesita JavaScript.</p></noscript>
+    <p class="boot-warning" id="boot-warning">Cargando… si ves esto, abre con un servidor local.</p>
+
+    <svg class="hills" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true">
+      <path class="hills__back" d="M0 55 C70 15 150 25 215 50 S335 85 400 45 V120 H0Z" />
+      <path d="M0 85 C70 58 150 68 210 88 S330 110 400 78 V120 H0Z" />
+    </svg>
+
+    <main class="app">
+      <!-- 1. Inicio -->
+      <section class="screen screen--home" id="screen-home" tabindex="-1" hidden>
+        <header class="home-header">
+          <h1 class="logo">Mira <span class="logo__accent">y Dime</span></h1>
+          <button class="gear" type="button" data-action="open-settings" aria-label="Ajustes para adultos">
+            <span data-icon="settings" data-size="26"></span>
+          </button>
+        </header>
+
+        <div class="greeting">
+          <div class="greeting__mascot mascot is-floating" id="home-mascot"></div>
+          <p class="bubble greeting__bubble">¡Hola! ¿Jugamos?</p>
+        </div>
+
+        <div class="level-picker" id="level-picker" role="group" aria-label="Nivel"></div>
+
+        <div class="mode-grid" id="mode-grid"></div>
+
+        <!-- Para el adulto: fotos de cosas de la casa. Oculto por ahora: el código sigue y lo prueban los e2e. -->
+        <button class="chunky home-objects" type="button" data-action="open-objects" hidden>
+          <span class="home-objects__icon"><span data-icon="camera" data-size="24"></span></span>
+          <span>Objetos de casa <span id="objects-count"></span></span>
+        </button>
+      </section>
+
+      <!-- 2. Juego -->
+      <section class="screen screen--game" id="screen-game" tabindex="-1" hidden>
+        <h2 class="sr-only">Jugando</h2>
+        <header class="topbar">
+          <div class="avatar" id="avatar"></div>
+          <div class="progress" id="progress" role="progressbar" aria-label="Rondas" aria-valuemin="0"></div>
+          <button class="gear" type="button" data-action="open-settings" aria-label="Ajustes para adultos">
+            <span data-icon="settings" data-size="26"></span>
+          </button>
+        </header>
+
+        <div class="mode-chip" id="mode-chip"></div>
+
+        <button
+          class="question"
+          id="question"
+          type="button"
+          data-action="repeat-question"
+          aria-label="Repetir la consigna"
+        ></button>
+
+        <div class="game-layout">
+          <div class="game-layout__main">
+            <div class="prompt-card" id="prompt-card"></div>
+            <div class="table" id="table"></div>
+            <!-- Lo único que se anuncia solo: una frase corta por fase, no todo el tablero. -->
+            <p class="sr-only" id="status" role="status"></p>
+          </div>
+          <div class="game-layout__side">
+            <div class="tray" id="tray"></div>
+            <details class="adult">
+              <summary class="adult__summary">
+                <span data-icon="info" data-size="22"></span>
+                <span>Para el adulto</span>
+                <span class="adult__chevron" data-icon="chevron-down" data-size="22"></span>
+              </summary>
+              <ul class="adult__list" id="adult-tips"></ul>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Final -->
+      <section class="screen screen--end" id="screen-end" tabindex="-1" hidden>
+        <div class="end">
+          <div class="end__mascot mascot is-floating" id="end-mascot"></div>
+          <div class="end__stars" id="end-stars"></div>
+          <h2 class="end__title">¡Lo hicimos juntos!</h2>
+          <p class="end__line" id="end-said"></p>
+          <div class="end__buttons" id="end-buttons">
+            <button class="chunky end__button" type="button" data-action="go-home">
+              <span data-icon="house" data-size="26"></span> Inicio
+            </button>
+            <button class="chunky chunky--blue end__button" type="button" data-action="play-again">
+              <span data-icon="rotate-ccw" data-size="26"></span> Otra vez
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Panel del adulto. settings-panel.js lo llena y lo maneja. -->
+    <dialog class="settings" id="settings" aria-labelledby="settings-title">
+      <form class="settings__form" method="dialog" id="settings-form">
+        <h2 class="settings__title" id="settings-title">Ajustes para adultos</h2>
+        <div id="settings-fields"></div>
+        <!-- install.js decide qué se ve: botón (Android/Chrome) o pasos para iPhone. -->
+        <section class="settings__section install" id="install" aria-labelledby="install-title" hidden>
+          <h3 class="settings__legend" id="install-title">Instalar en el celular</h3>
+          <p class="settings__note">Queda como app en la pantalla de inicio y funciona sin internet.</p>
+          <button class="settings__button settings__button--primary" type="button" id="install-button" hidden>
+            Instalar
+          </button>
+          <p class="settings__note" id="install-ios" hidden>
+            En Safari, toca <strong>Compartir</strong> y luego <strong>Agregar a inicio</strong>.
+          </p>
+        </section>
+        <div class="settings__actions">
+          <button class="settings__button" type="button" data-settings="home">Inicio</button>
+          <button class="settings__button" type="button" data-settings="cancel">Cancelar</button>
+          <button class="settings__button settings__button--primary" type="submit" data-settings="save">
+            Guardar y empezar
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Objetos de casa. objects-panel.js lo maneja. -->
+    <dialog class="settings objects" id="objects" aria-labelledby="objects-title">
+      <form class="settings__form" id="objects-form" novalidate>
+        <h2 class="settings__title" id="objects-title">Objetos de casa</h2>
+        <p class="settings__note">
+          Saca una foto de una cosa de la casa: solo el objeto, sin caras. La IA propone la palabra y tú la revisas. La
+          foto se achica y se envía sin datos de ubicación (ver Privacidad en el README).
+        </p>
+
+        <div class="objects__start">
+          <label class="settings__button settings__button--primary objects__camera">
+            <input class="sr-only" type="file" accept="image/*" capture="environment" id="objects-file" />
+            <span data-icon="camera" data-size="20"></span> Tomar foto
+          </label>
+          <button class="settings__button" type="button" data-objects="manual">
+            <span data-icon="pencil" data-size="20"></span> Escribir yo la palabra
+          </button>
+        </div>
+
+        <div class="objects__wait">
+          <p class="objects__status" id="objects-status" role="status"></p>
+          <button class="settings__button" type="button" data-objects="cancel" id="objects-cancel" hidden>
+            Cancelar
+          </button>
+        </div>
+
+        <fieldset class="objects__editor" id="objects-editor" hidden>
+          <legend class="settings__legend">Nuevo objeto</legend>
+          <img
+            class="objects__preview"
+            id="objects-preview"
+            src="icons/icon.svg"
+            alt="Foto del objeto"
+            width="360"
+            height="360"
+            hidden
+          />
+          <label class="objects__label" for="object-word">Palabra</label>
+          <input class="objects__input" id="object-word" type="text" autocomplete="off" maxlength="20" />
+          <p class="objects__hint">Sílabas: <span id="objects-syllables"></span></p>
+          <label class="objects__label" for="object-short">Frase corta (2 palabras)</label>
+          <input class="objects__input" id="object-short" type="text" autocomplete="off" maxlength="60" />
+          <label class="objects__label" for="object-long">Frase larga (3 o 4 palabras)</label>
+          <input class="objects__input" id="object-long" type="text" autocomplete="off" maxlength="80" />
+          <div class="objects__actions">
+            <button class="settings__button" type="button" data-objects="discard">Descartar</button>
+            <button class="settings__button settings__button--primary" type="submit">Guardar</button>
+          </div>
+        </fieldset>
+
+        <h3 class="settings__legend objects__heading">Guardados</h3>
+        <ul class="objects__list" id="objects-list"></ul>
+
+        <div class="settings__actions settings__actions--single">
+          <button class="settings__button settings__button--primary" type="button" data-objects="close">Listo</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>
